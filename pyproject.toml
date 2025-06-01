@@ -1,0 +1,19 @@
+[project]
+name = "basketball-metric-bonanza"
+version = "0.1.0"
+description = "Creating a set of ambitious and advanced sports metrics to evaluate players and ultimately predict team wins."
+authors = [
+    {name = "7AC0B"}
+]
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "pandas (>=2.2.3,<3.0.0)",
+    "numpy (>=2.2.6,<3.0.0)",
+    "matplotlib (>=3.10.3,<4.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
