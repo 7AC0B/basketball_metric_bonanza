@@ -6,6 +6,8 @@ project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.append(project_root)
 from utils.bs_helpers import get_all_urls_in_html
 
+data_path = 'data'
+
 #________________________________________________________________________________________________________________________
 
 # Get URLs to scrape.
@@ -38,4 +40,4 @@ for url in urls_to_scrape:
 #________________________________________________________________________________________________________________________
 
 # Save
-pd.DataFrame(set(player_links_found), columns = ['player_urls']).to_csv('../data/scraped_data/player_urls.csv', index = False)
+pd.DataFrame(set(player_links_found), columns = ['player_urls']).to_csv(f'{data_path}/scraped_data/player_urls.csv', index = False)
