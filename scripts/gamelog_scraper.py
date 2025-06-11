@@ -7,7 +7,7 @@ from bs4 import BeautifulSoup
 import random
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.append(project_root)
-from utils.bs_helpers import extract_and_save_player_data
+from utils.bs_helpers import extract_and_save_tables
 import re
 
 data_path = 'data'
@@ -56,7 +56,8 @@ for url in player_urls_to_visit:
     soup = BeautifulSoup(response.text, 'html.parser')
 
     # Extract and save data to data_path
-    extract_and_save_player_data(player_soup = soup, player_username = player_username, data_path = data_path, save_path = 'scraped_data/gamelog_tables', url = url)
+    site_id = url[url.find('/players/'):].replace('/', '_') # used in the filename
+    extract_and_save_tables(site_soup = soup, site_id = site_id, data_path = data_path, save_path = 'scraped_data/gamelog_tables')
 
     # Update log of already-requested players
     requested_player_urls = pd.concat([requested_player_urls, pd.DataFrame([url], columns = ['requested_url'])], ignore_index = True)

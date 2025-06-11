@@ -50,8 +50,8 @@ def get_overheader_multi_index(table):
 
     return multi_index
 
-def save_player_table(player_soup, table_id = 'totals_stats'):
-    table = player_soup.find('table', id = table_id)
+def get_table_df(site_soup, table_id = 'totals_stats'):
+    table = site_soup.find('table', id = table_id)
 
     table_rows = table.find('tbody').find_all(['tr'])
     table_data = [[row_value.text for row_value in row_elements.find_all(['th', 'td'])] for row_elements in table_rows]
@@ -69,14 +69,37 @@ def save_player_table(player_soup, table_id = 'totals_stats'):
 
     return table_df
 
+def get_table_df_dict(site_soup, table_id = 'totals_stats'):
+    table = site_soup.find('table', id = table_id)
+
+    table_rows = table.find('tbody').find_all(['tr'])
+    table_data = [[row_value.text for row_value in row_elements.find_all(['th', 'td'])] for row_elements in table_rows]
+    table_urls = [[row_value.find('a')['href'] if row_value.find('a') != None else None for row_value in row_elements.find_all(['th', 'td'])] for row_elements in table_rows]
+
+    table_has_overheader = len(table.find_all('tr', class_='over_header')) > 0
+
+    if table_has_overheader:
+
+        multi_index_headers = get_overheader_multi_index(table)
+        data_table_df = pd.DataFrame(table_data, columns=pd.MultiIndex.from_tuples(multi_index_headers))
+        url_table_df = pd.DataFrame(table_urls, columns=pd.MultiIndex.from_tuples(multi_index_headers))
+
+    else:
+
+        colheaders = [colheader.text for colheader in table.find('thead').find_all('th')]
+        data_table_df = pd.DataFrame(table_data, columns = colheaders)
+        url_table_df = pd.DataFrame(table_urls, columns = colheaders)
+
+    return {'data_table' : data_table_df, 'url_table' : url_table_df}
+
 def get_player_gamelog_urls(player_soup):
     all_gamelog_link_elements = list(set([link['href'] for link in player_soup.find_all('a') if '/gamelog/' in str(link)]))
     all_gamelog_link_elements = list(set([link[:-1] if link.endswith('/') else link for link in all_gamelog_link_elements]))
     return pd.DataFrame(all_gamelog_link_elements, columns=['gamelog_url'])
 
-def extract_and_save_player_data(player_soup, player_username, data_path = '../data', save_path = 'scraped_data/player_tables', url = ''):
+def extract_and_save_tables(site_soup, site_id, data_path = '../data', save_path = 'scraped_data/player_tables'):
 
-    table_ids_found_on_page = [table_element['id'] for table_element in player_soup.find_all('table') if table_element.has_attr('id')]
+    table_ids_found_on_page = [table_element['id'] for table_element in site_soup.find_all('table') if table_element.has_attr('id')]
 
     print('Found', len(table_ids_found_on_page), 'table ids.')
 
@@ -84,27 +107,15 @@ def extract_and_save_player_data(player_soup, player_username, data_path = '../d
     for table_id in table_ids_found_on_page:
 
         try:
-            table_found = save_player_table(player_soup = player_soup, table_id = table_id)
-            # table_found.to_csv(f'{data_path}/{save_path}/{player_username}___{table_id}.csv')
+            tables_found = get_table_df_dict(site_soup = site_soup, table_id = table_id)
 
-            filename_tag = url[url.find('/players/'):].replace('/', '_')
-
-            table_found.to_csv(f'{data_path}/{save_path}/{filename_tag}.csv')
+            tables_found['data_table'].to_csv(f'{data_path}/{save_path}/{site_id}___{table_id}.csv')
+            tables_found['url_table'].to_csv(f'{data_path}/{save_path}/{site_id}___{table_id}___urls.csv')
 
         except:
             print((f'*** FAILED TO FETCH {table_id} ***'))
 
             # Save soup along with table_id for future retry
-            with open(f'{data_path}/failed_table_scrapes/{player_username}___table_id___{table_id}.html', "w", encoding="utf-8") as f:
-                f.write(str(player_soup))
+            with open(f'{data_path}/failed_table_scrapes/{site_id}___{table_id}.html', "w", encoding="utf-8") as f:
+                f.write(str(site_soup))
             
-    # ### FIND AND SAVE ALL GAMELOG URLS FOUND IN PLAYER SOUP ###
-    # try:
-    #     table_found = get_player_gamelog_urls(player_soup = player_soup)
-    #     table_found.to_csv(f'{data_path}/{save_path}/{player_username}___gamelog_urls.csv')
-    # except:
-    #     print((f'*** FAILED TO FETCH gamelog_urls ***'))
-
-    #     # Save soup along with table_id for future retry
-    #     with open(f'{data_path}/failed_table_scrapes/{player_username}___gamelog_urls.html', "w", encoding="utf-8") as f:
-    #         f.write(str(player_soup))
