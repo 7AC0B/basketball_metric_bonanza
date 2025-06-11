@@ -106,16 +106,16 @@ def extract_and_save_tables(site_soup, site_id, data_path = '../data', save_path
     ### FIND AND SAVE ALL DATATABLES IN PLAYER SOUP ###
     for table_id in table_ids_found_on_page:
 
-        try:
-            tables_found = get_table_df_dict(site_soup = site_soup, table_id = table_id)
+        # try:
+        tables_found = get_table_df_dict(site_soup = site_soup, table_id = table_id)
 
-            tables_found['data_table'].to_csv(f'{data_path}/{save_path}/{site_id}___{table_id}.csv')
-            tables_found['url_table'].to_csv(f'{data_path}/{save_path}/{site_id}___{table_id}___urls.csv')
+        tables_found['data_table'].to_csv(f'{data_path}/{save_path}/{site_id}___{table_id}.csv')
+        tables_found['url_table'].to_csv(f'{data_path}/{save_path}/{site_id}___{table_id}___urls.csv')
 
-        except:
-            print((f'*** FAILED TO FETCH {table_id} ***'))
+        # except:
+        #     print((f'*** FAILED TO FETCH {table_id} ***'))
 
-            # Save soup along with table_id for future retry
-            with open(f'{data_path}/failed_table_scrapes/{site_id}___{table_id}.html', "w", encoding="utf-8") as f:
-                f.write(str(site_soup))
+        #     # Save soup along with table_id for future retry
+        #     with open(f'{data_path}/failed_table_scrapes/{site_id}___{table_id}.html', "w", encoding="utf-8") as f:
+        #         f.write(str(site_soup))
             
